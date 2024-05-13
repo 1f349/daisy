@@ -6,14 +6,17 @@ import (
 	"flag"
 	"github.com/1f349/daisy"
 	"github.com/1f349/violet/utils"
+	"github.com/charmbracelet/log"
 	"github.com/google/subcommands"
 	"github.com/mrmelon54/exit-reload"
-	"log"
 	"os"
 	"path/filepath"
 )
 
-type serveCmd struct{ configPath string }
+type serveCmd struct {
+	configPath string
+	debugLog   bool
+}
 
 func (s *serveCmd) Name() string { return "serve" }
 
@@ -21,6 +24,7 @@ func (s *serveCmd) Synopsis() string { return "Serve contacts service" }
 
 func (s *serveCmd) SetFlags(f *flag.FlagSet) {
 	f.StringVar(&s.configPath, "conf", "", "/path/to/config.json : path to the config file")
+	f.BoolVar(&s.debugLog, "debug", false, "enable debug logging")
 }
 
 func (s *serveCmd) Usage() string {
@@ -30,19 +34,22 @@ func (s *serveCmd) Usage() string {
 }
 
 func (s *serveCmd) Execute(_ context.Context, _ *flag.FlagSet, _ ...any) subcommands.ExitStatus {
-	log.Println("[Daisy] Starting...")
+	if s.debugLog {
+		daisy.Logger.SetLevel(log.DebugLevel)
+	}
+	daisy.Logger.Info("Starting...")
 
 	if s.configPath == "" {
-		log.Println("[Daisy] Error: config flag is missing")
+		daisy.Logger.Error("Config flag is missing")
 		return subcommands.ExitUsageError
 	}
 
 	openConf, err := os.Open(s.configPath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			log.Println("[Daisy] Error: missing config file")
+			daisy.Logger.Error("Missing config file")
 		} else {
-			log.Println("[Daisy] Error: open config file: ", err)
+			daisy.Logger.Error("Open config file", "err", err)
 		}
 		return subcommands.ExitFailure
 	}
@@ -50,13 +57,14 @@ func (s *serveCmd) Execute(_ context.Context, _ *flag.FlagSet, _ ...any) subcomm
 	var config daisy.Conf
 	err = json.NewDecoder(openConf).Decode(&config)
 	if err != nil {
-		log.Println("[Daisy] Error: invalid config file: ", err)
+		daisy.Logger.Error("Invalid config file", "err", err)
 		return subcommands.ExitFailure
 	}
 
 	configPathAbs, err := filepath.Abs(s.configPath)
 	if err != nil {
-		log.Fatal("[Daisy] Failed to get absolute config path")
+		daisy.Logger.Error("Failed to get absolute config path")
+		return subcommands.ExitFailure
 	}
 	wd := filepath.Dir(configPathAbs)
 	normalLoad(config, wd)
@@ -65,7 +73,7 @@ func (s *serveCmd) Execute(_ context.Context, _ *flag.FlagSet, _ ...any) subcomm
 
 func normalLoad(startUp daisy.Conf, wd string) {
 	srv := daisy.NewHttpServer(startUp, wd)
-	log.Printf("[Daisy] Starting HTTP server on '%s'\n", srv.Addr)
+	daisy.Logger.Infof("Starting HTTP server on '%s'", srv.Addr)
 	go utils.RunBackgroundHttp("HTTP", srv)
 
 	exit_reload.ExitReload("Daisy", func() {}, func() {
