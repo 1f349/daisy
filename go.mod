@@ -4,8 +4,8 @@ go 1.22
 
 require (
 	git.sr.ht/~sircmpwn/tokidoki v0.0.0-20240419154046-4ca7d8c4e7ca
-	github.com/1f349/cardcaldav v0.0.3
-	github.com/1f349/violet v0.0.13
+	github.com/1f349/cardcaldav v0.0.4
+	github.com/1f349/violet v0.0.14
 	github.com/charmbracelet/log v0.4.0
 	github.com/emersion/go-webdav v0.5.1-0.20240419143909-21f251fa1de2
 	github.com/google/subcommands v1.2.0

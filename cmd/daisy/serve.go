@@ -74,7 +74,7 @@ func (s *serveCmd) Execute(_ context.Context, _ *flag.FlagSet, _ ...any) subcomm
 func normalLoad(startUp daisy.Conf, wd string) {
 	srv := daisy.NewHttpServer(startUp, wd)
 	daisy.Logger.Infof("Starting HTTP server on '%s'", srv.Addr)
-	go utils.RunBackgroundHttp("HTTP", srv)
+	go utils.RunBackgroundHttp(daisy.Logger, srv)
 
 	exit_reload.ExitReload("Daisy", func() {}, func() {
 		// stop http server
