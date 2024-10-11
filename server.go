@@ -1,14 +1,20 @@
 package daisy
 
 import (
+	"embed"
 	"git.sr.ht/~sircmpwn/tokidoki/storage"
 	"github.com/1f349/cardcaldav"
 	"github.com/emersion/go-webdav"
 	"github.com/emersion/go-webdav/carddav"
 	"net/http"
+	"path"
 	"path/filepath"
+	"strings"
 	"time"
 )
+
+//go:embed web/dist
+var webEmbedded embed.FS
 
 type Conf struct {
 	Listen string `json:"listen"`
@@ -28,12 +34,12 @@ func (d *daisyHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	}
 
 	var homeSets []webdav.BackendSuppliedHomeSet
-	path, err := d.backend.AddressBookHomeSetPath(req.Context())
+	homeSetPath, err := d.backend.AddressBookHomeSetPath(req.Context())
 	if err != nil {
 		http.Error(rw, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	homeSets = append(homeSets, carddav.NewAddressBookHomeSet(path))
+	homeSets = append(homeSets, carddav.NewAddressBookHomeSet(homeSetPath))
 
 	if req.URL.Path == principlePath {
 		opts := webdav.ServePrincipalOptions{
@@ -48,7 +54,16 @@ func (d *daisyHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	}
 
 	if req.URL.Path == "/" {
-		http.Error(rw, "Daisy API Endpoint", http.StatusOK)
+		http.ServeFileFS(rw, req, webEmbedded, "web/dist/index.html")
+		return
+	}
+
+	if after, found := strings.CutPrefix(req.URL.Path, "/assets/"); found {
+		if strings.Contains(after, "..") {
+			http.Error(rw, "400 Bad Request", http.StatusBadRequest)
+			return
+		}
+		http.ServeFileFS(rw, req, webEmbedded, path.Join("web/dist/assets", after))
 		return
 	}
 
