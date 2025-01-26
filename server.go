@@ -77,6 +77,9 @@ func NewHttpServer(conf Conf, wd string) *http.Server {
 
 	r := http.NewServeMux()
 	r.Handle("/", handler)
+	r.Handle("GET /ok", http.HandlerFunc(func(rw http.ResponseWriter, _ *http.Request) {
+		http.Error(rw, "Daisy API Endpoint", http.StatusOK)
+	}))
 	r.Handle("/.well-known/carddav", cardHandler)
 	r.Handle("/{user}/contacts/", cardHandler)
 
