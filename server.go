@@ -76,12 +76,12 @@ func NewHttpServer(conf Conf, wd string) *http.Server {
 	}
 
 	r := http.NewServeMux()
-	r.Handle("/", handler)
-	r.Handle("GET /ok", http.HandlerFunc(func(rw http.ResponseWriter, _ *http.Request) {
-		http.Error(rw, "Daisy API Endpoint", http.StatusOK)
+	r.Handle("/", principle.Middleware(handler))
+	r.Handle("GET /health", http.HandlerFunc(func(rw http.ResponseWriter, _ *http.Request) {
+		http.Error(rw, "Health OK", http.StatusOK)
 	}))
-	r.Handle("/.well-known/carddav", cardHandler)
-	r.Handle("/{user}/contacts/", cardHandler)
+	r.Handle("/.well-known/carddav", principle.Middleware(cardHandler))
+	r.Handle("/{user}/contacts/", principle.Middleware(cardHandler))
 
 	r2 := http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		t := time.Now()
@@ -92,7 +92,7 @@ func NewHttpServer(conf Conf, wd string) *http.Server {
 
 	return &http.Server{
 		Addr:              conf.Listen,
-		Handler:           principle.Middleware(r2),
+		Handler:           r2,
 		ReadTimeout:       time.Minute,
 		ReadHeaderTimeout: time.Minute,
 		WriteTimeout:      time.Minute,
