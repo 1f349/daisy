@@ -62,7 +62,7 @@ type AuthProvider interface {
 
 func NewHttpServer(conf Conf, wd string) *http.Server {
 	cardcaldav.SetupLogger(Logger)
-	principle := NullAuth(cardcaldav.NewAuth(conf.DB, Logger))
+	principle := NewAuth(conf.DB, Logger)
 
 	_, cardStorage, err := storage.NewFilesystem(filepath.Join(wd, "storage"), "/calendar/", "/contacts/", principle)
 	if err != nil {
