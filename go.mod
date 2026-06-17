@@ -4,7 +4,7 @@ go 1.26
 
 require (
 	git.sr.ht/~sircmpwn/tokidoki v0.0.0-20250116163541-8085f6878f95
-	github.com/1f349/cardcaldav v0.0.6
+	github.com/1f349/cardcaldav v0.1.0
 	github.com/1f349/violet v0.0.15
 	github.com/charmbracelet/log v0.4.2
 	github.com/emersion/go-webdav v0.7.0
@@ -14,6 +14,7 @@ require (
 
 require (
 	filippo.io/edwards25519 v1.2.0 // indirect
+	github.com/1f349/lantana v0.0.1 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/charmbracelet/colorprofile v0.4.2 // indirect
 	github.com/charmbracelet/lipgloss v1.1.0 // indirect
